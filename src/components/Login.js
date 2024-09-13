@@ -1,53 +1,49 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+//import { loginUser } from '../api/api';
 
-function Login() {
-  const [email, setEmail] = useState('');
+const Login = ({ onLoginSuccess }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const history = useNavigate();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.post('/api/login', { email, password })
-      .then(response => {
-        if (response.data.success) {
-          history.push('/dashboard');
-        } else {
-          alert('Invalid credentials');
-        }
-      })
-      .catch(error => console.error('Error logging in:', error));
+    try {
+      const data = await loginUser({ username, password });
+      localStorage.setItem('token', data.token);
+      onLoginSuccess();
+      navigate('/add-fan'); // Redirect to fan dashboard after login
+    } catch (error) {
+      alert('Login failed!');
+    }
   };
 
   return (
     <div>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="button">Login</button>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
       </form>
+
+      {/* Button to navigate to Register page */}
+      <button onClick={() => navigate('/register')}>Register</button>
     </div>
   );
-}
+};
 
 export default Login;
